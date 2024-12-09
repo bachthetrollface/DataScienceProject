@@ -1,6 +1,9 @@
-from sklearn.metrics import mean_absolute_error, mean_squared_error, root_mean_squared_error, mean_absolute_percentage_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, root_mean_squared_error, \
+    mean_absolute_percentage_error, accuracy_score, precision_score, \
+    recall_score, f1_score, median_absolute_error
 from pandas import DataFrame, Series
-def cross_val_metrics_calculate(model, X:DataFrame, y:Series, splits, metrics=['mse', 'rmse', 'mae', 'mape']):
+
+def cross_val_metrics_calculate(model, X:DataFrame, y:Series, splits, metrics=['mse', 'rmse', 'mae', 'mape', 'medae', 'medape']):
     n_folds = 0
     result = {name:0 for name in metrics}
     for train_index, test_index in splits:
@@ -17,6 +20,22 @@ def cross_val_metrics_calculate(model, X:DataFrame, y:Series, splits, metrics=['
             result['mae'] += mean_absolute_error(y_test, y_pred)
         if 'mape' in metrics:
             result['mape'] += mean_absolute_percentage_error(y_test, y_pred)
+        if 'accuracy' in metrics:
+            result['accuracy'] += accuracy_score(y_test, y_pred)
+        if 'precision' in metrics:
+            result['precision'] += precision_score(y_test, y_pred, average='macro', zero_division=0)
+        if 'recall' in metrics:
+            result['recall'] += recall_score(y_test, y_pred, average='macro', zero_division=0)
+        if 'f1' in metrics:
+            result['f1'] += f1_score(y_test, y_pred, average='macro', zero_division=0)
+        if 'medae' in metrics:
+            result['medae'] += median_absolute_error(y_test, y_pred)
+        if 'medape' in metrics:
+            result['medape'] += median_absolute_percentage_error(y_test, y_pred)
     for metric in metrics:
         result[metric] /= n_folds
     return result
+
+def median_absolute_percentage_error(y_true, y_pred):
+    result = abs(y_true - y_pred) / y_true
+    return result.median()
